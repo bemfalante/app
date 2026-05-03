@@ -10,17 +10,21 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.button.MaterialButton;
 
 public class MainActivity extends AppCompatActivity {
 
     private RadioService radioService;
     private boolean isBound = false;
-    private MaterialButton btnPlayPause;
+    private ImageButton btnPlayPause;
     private ProgressBar loadingIndicator;
+    private LinearLayout onAirContainer;
+    private Animation blinkAnimation;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable updateTask = new Runnable() {
         @Override
@@ -51,9 +55,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btnPlayPause = findViewById(R.id.btn_play_pause);
-        MaterialButton btnStop = findViewById(R.id.btn_stop);
+        ImageButton btnStop = findViewById(R.id.btn_stop);
         ImageButton btnInstagram = findViewById(R.id.btn_instagram);
         loadingIndicator = findViewById(R.id.loading_indicator);
+        onAirContainer = findViewById(R.id.on_air_container);
+
+        blinkAnimation = new AlphaAnimation(0.0f, 1.0f);
+        blinkAnimation.setDuration(500);
+        blinkAnimation.setStartOffset(20);
+        blinkAnimation.setRepeatMode(Animation.REVERSE);
+        blinkAnimation.setRepeatCount(Animation.INFINITE);
 
         btnPlayPause.setOnClickListener(v -> {
             if (isBound) {
@@ -86,17 +97,25 @@ public class MainActivity extends AppCompatActivity {
     private void updateUI() {
         if (isBound) {
             if (radioService.isPlaying()) {
-                btnPlayPause.setText(R.string.pause);
+                btnPlayPause.setImageResource(R.drawable.ic_pause);
                 btnPlayPause.setEnabled(true);
                 loadingIndicator.setVisibility(View.GONE);
+                onAirContainer.setVisibility(View.VISIBLE);
+                if (onAirContainer.getAnimation() == null) {
+                    onAirContainer.startAnimation(blinkAnimation);
+                }
             } else if (radioService.isPreparing()) {
-                btnPlayPause.setText("Carregando...");
+                btnPlayPause.setImageResource(R.drawable.ic_play);
                 btnPlayPause.setEnabled(false);
                 loadingIndicator.setVisibility(View.VISIBLE);
+                onAirContainer.setVisibility(View.GONE);
+                onAirContainer.clearAnimation();
             } else {
-                btnPlayPause.setText(R.string.play);
+                btnPlayPause.setImageResource(R.drawable.ic_play);
                 btnPlayPause.setEnabled(true);
                 loadingIndicator.setVisibility(View.GONE);
+                onAirContainer.setVisibility(View.GONE);
+                onAirContainer.clearAnimation();
             }
         }
     }
