@@ -4,4 +4,7 @@
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
     <string name="instagram_link">https://www.instagram.com/radiotvbemfalante</string>
+    <string name="status_on_air">Ao vivo!</string>
+    <string name="status_tuning">Sintonizando</string>
+    <string name="status_press_play">Aperte o play!</string>
 </resources>
