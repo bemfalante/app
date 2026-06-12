@@ -19,8 +19,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:gravity="center"
         android:orientation="horizontal"
+        android:background="@drawable/bg_status_pill"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -53,18 +58,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/iv_arrow"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_arrow_animated"
-        android:rotation="90"
-        app:layout_constraintBottom_toTopOf="@+id/controls"
-        app:layout_constraintEnd_toEndOf="@+id/controls"
-        app:layout_constraintStart_toStartOf="@+id/controls"
-        app:layout_constraintHorizontal_bias="0.3"/>
 
     <LinearLayout
         android:id="@+id/controls"

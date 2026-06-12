@@ -1,6 +1,8 @@
 <resources>
     <color name="dark_red">#8B0000</color>
+    <color name="dark_red_70">#B38B0000</color>
     <color name="orange">#FF8C00</color>
+    <color name="orange_70">#B3FF8C00</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 </resources>
