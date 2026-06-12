@@ -82,8 +82,8 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                 mediaPlayer.reset();
             } else {
                 mediaPlayer = new MediaPlayer();
-                mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
             }
+            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
 
             mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -118,7 +118,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                     if (wifiLock.isHeld()) wifiLock.release();
                     if (shouldRetry) {
                         mp.reset();
-                        playRadio();
+                        retryHandler.postDelayed(this::playRadio, 5000);
                     }
                 });
             } catch (IOException e) {
