@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 btnPlayPause.setEnabled(true);
                 loadingIndicator.setVisibility(View.GONE);
                 tvStatus.setText(R.string.status_on_air);
-                tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark));
+                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.dark_red));
                 onAirDot.setVisibility(View.VISIBLE);
                 ivArrow.setVisibility(View.GONE);
                 ivArrow.clearAnimation();
