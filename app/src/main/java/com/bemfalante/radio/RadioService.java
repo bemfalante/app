@@ -16,6 +16,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 import androidx.core.app.NotificationCompat;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
     private WifiManager.WifiLock wifiLock;
-    private final Handler retryHandler = new Handler();
+    private final Handler retryHandler = new Handler(Looper.getMainLooper());
     private boolean shouldRetry = false;
 
     public class RadioBinder extends Binder {
@@ -73,11 +74,17 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
 
     public void playRadio() {
         shouldRetry = true;
+        retryHandler.removeCallbacksAndMessages(null);
         if (requestAudioFocus()) {
             if (mediaPlayer != null) {
                 if (mediaPlayer.isPlaying()) return;
                 if (isPreparing) return;
-                mediaPlayer.reset();
+                try {
+                    mediaPlayer.reset();
+                } catch (Exception e) {
+                    mediaPlayer.release();
+                    mediaPlayer = new MediaPlayer();
+                }
             } else {
                 mediaPlayer = new MediaPlayer();
             }
@@ -144,6 +151,9 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         retryHandler.removeCallbacksAndMessages(null);
         if (mediaPlayer != null) {
             try {
+                mediaPlayer.setOnPreparedListener(null);
+                mediaPlayer.setOnErrorListener(null);
+                mediaPlayer.setOnCompletionListener(null);
                 mediaPlayer.reset();
                 mediaPlayer.release();
             } catch (Exception e) {

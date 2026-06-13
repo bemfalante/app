@@ -84,29 +84,29 @@
 
         <ImageButton
             android:id="@+id/btn_play_pause"
-            android:layout_width="66dp"
-            android:layout_height="66dp"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
             android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play"
-            app:tint="@color/white" />
+            app:tint="@color/dark_red" />
 
         <ImageButton
             android:id="@+id/btn_stop"
-            android:layout_width="66dp"
-            android:layout_height="66dp"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_stop"
-            app:tint="@color/white" />
+            app:tint="@color/orange" />
 
     </LinearLayout>
 
     <ImageButton
         android:id="@+id/btn_instagram"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="57dp"
+        android:layout_height="57dp"
         android:layout_margin="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:padding="4dp"
