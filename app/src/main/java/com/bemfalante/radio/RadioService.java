@@ -143,8 +143,12 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         shouldRetry = false;
         retryHandler.removeCallbacksAndMessages(null);
         if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
+            try {
+                mediaPlayer.reset();
+                mediaPlayer.release();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mediaPlayer = null;
             isPlaying = false;
             isPreparing = false;

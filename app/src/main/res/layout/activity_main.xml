@@ -72,28 +72,34 @@
         android:layout_marginBottom="48dp"
         android:gravity="center"
         android:orientation="horizontal"
+        android:background="@drawable/bg_controls_pill"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <ImageButton
             android:id="@+id/btn_play_pause"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
             android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play"
-            app:tint="@color/orange" />
+            app:tint="@color/white" />
 
         <ImageButton
             android:id="@+id/btn_stop"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_stop"
-            app:tint="@color/dark_red" />
+            app:tint="@color/white" />
 
     </LinearLayout>
 
