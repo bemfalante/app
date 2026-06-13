@@ -78,9 +78,10 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
     public void playRadio() {
         shouldRetry = true;
         retryHandler.removeCallbacksAndMessages(null);
-        if (requestAudioFocus()) {
-            if (isPlaying || isPreparing) return;
 
+        if (isPlaying || isPreparing) return;
+
+        if (requestAudioFocus()) {
             isPreparing = true;
             startForeground(NOTIFICATION_ID, getNotification());
 

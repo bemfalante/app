@@ -117,45 +117,44 @@ public class MainActivity extends AppCompatActivity {
                 currentState = 0;
             }
 
-            if (currentState == 2) {
-                btnPlayPause.setImageResource(R.drawable.ic_pause);
-                btnPlayPause.setEnabled(true);
-                loadingIndicator.setVisibility(View.GONE);
-                onAirDot.setVisibility(View.VISIBLE);
-                if (onAirDot.getAnimation() == null) {
-                    onAirDot.startAnimation(blinkAnimation);
-                }
-                if (lastState != currentState) {
+            // SÓ ATUALIZA A UI SE HOUVER MUDANÇA REAL DE ESTADO
+            if (lastState != currentState) {
+                if (currentState == 2) {
+                    btnPlayPause.setImageResource(R.drawable.ic_pause);
+                    btnPlayPause.setEnabled(true);
+                    loadingIndicator.setVisibility(View.GONE);
+                    onAirDot.setVisibility(View.VISIBLE);
+                    if (onAirDot.getAnimation() == null) {
+                        onAirDot.startAnimation(blinkAnimation);
+                    }
                     tvStatus.setText(R.string.status_on_air);
                     tvStatus.setTextColor(ContextCompat.getColor(this, R.color.dark_red));
                     ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.orange_70)));
-                }
-            } else if (currentState == 1) {
-                btnPlayPause.setImageResource(R.drawable.ic_play);
-                btnPlayPause.setEnabled(false);
-                loadingIndicator.setVisibility(View.VISIBLE);
-                onAirDot.setVisibility(View.GONE);
-                onAirDot.clearAnimation();
-                if (lastState != currentState) {
+
+                } else if (currentState == 1) {
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                    btnPlayPause.setEnabled(false); // Evita múltiplos cliques enquanto prepara
+                    loadingIndicator.setVisibility(View.VISIBLE);
+                    onAirDot.setVisibility(View.GONE);
+                    onAirDot.clearAnimation();
                     tvStatus.setText(R.string.status_tuning);
                     tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
                     ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
-                }
-            } else {
-                btnPlayPause.setImageResource(R.drawable.ic_play);
-                btnPlayPause.setEnabled(true);
-                loadingIndicator.setVisibility(View.GONE);
-                onAirDot.setVisibility(View.GONE);
-                onAirDot.clearAnimation();
-                if (lastState != currentState) {
+
+                } else {
+                    btnPlayPause.setImageResource(R.drawable.ic_play);
+                    btnPlayPause.setEnabled(true);
+                    loadingIndicator.setVisibility(View.GONE);
+                    onAirDot.setVisibility(View.GONE);
+                    onAirDot.clearAnimation();
                     tvStatus.setText(R.string.status_press_play);
                     tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
                     ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 }
+                lastState = currentState;
             }
-            lastState = currentState;
         } else {
-            // Initial state before service is bound
+            // Estado inicial antes do service conectar
             if (lastState != 0) {
                 tvStatus.setText(R.string.status_press_play);
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
