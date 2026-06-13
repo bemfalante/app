@@ -15,9 +15,11 @@ import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.content.res.ColorStateList;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         statusContainer = findViewById(R.id.status_container);
         onAirDot = findViewById(R.id.on_air_dot);
 
+        // Ensure status container is on top
+        ViewCompat.setElevation(statusContainer, 20f);
+
         blinkAnimation = new AlphaAnimation(0.0f, 1.0f);
         blinkAnimation.setDuration(500);
         blinkAnimation.setStartOffset(20);
@@ -108,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 loadingIndicator.setVisibility(View.GONE);
                 tvStatus.setText(R.string.status_on_air);
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.dark_red));
-                statusContainer.getBackground().setTint(ContextCompat.getColor(this, R.color.orange_70));
+                ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.orange_70)));
                 onAirDot.setVisibility(View.VISIBLE);
                 if (onAirDot.getAnimation() == null) {
                     onAirDot.startAnimation(blinkAnimation);
@@ -119,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 loadingIndicator.setVisibility(View.VISIBLE);
                 tvStatus.setText(R.string.status_tuning);
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-                statusContainer.getBackground().setTint(ContextCompat.getColor(this, R.color.dark_red_70));
+                ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 onAirDot.setVisibility(View.GONE);
                 onAirDot.clearAnimation();
             } else {
@@ -128,10 +133,16 @@ public class MainActivity extends AppCompatActivity {
                 loadingIndicator.setVisibility(View.GONE);
                 tvStatus.setText(R.string.status_press_play);
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-                statusContainer.getBackground().setTint(ContextCompat.getColor(this, R.color.dark_red_70));
+                ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 onAirDot.setVisibility(View.GONE);
                 onAirDot.clearAnimation();
             }
+        } else {
+            // Initial state before service is bound
+            tvStatus.setText(R.string.status_press_play);
+            tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
+            ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
+            onAirDot.setVisibility(View.GONE);
         }
     }
 

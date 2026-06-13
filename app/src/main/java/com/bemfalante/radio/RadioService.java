@@ -11,9 +11,12 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import androidx.core.app.NotificationCompat;
 import java.io.IOException;
 
@@ -33,6 +36,9 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
     private boolean isPreparing = false;
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
+    private WifiManager.WifiLock wifiLock;
+    private final Handler retryHandler = new Handler();
+    private boolean shouldRetry = false;
 
     public class RadioBinder extends Binder {
         RadioService getService() {
@@ -44,6 +50,8 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
     public void onCreate() {
         super.onCreate();
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE))
+                .createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "RadioService:WifiLock");
         createNotificationChannel();
     }
 
@@ -64,51 +72,76 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
     }
 
     public void playRadio() {
+        shouldRetry = true;
         if (requestAudioFocus()) {
-            if (mediaPlayer == null) {
+            if (mediaPlayer != null) {
+                if (mediaPlayer.isPlaying()) return;
+                if (isPreparing) return;
+                mediaPlayer.reset();
+            } else {
                 mediaPlayer = new MediaPlayer();
-                mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build());
-                try {
-                    mediaPlayer.setDataSource(STREAM_URL);
-                    isPreparing = true;
-                    mediaPlayer.prepareAsync();
-                    mediaPlayer.setOnPreparedListener(mp -> {
-                        isPreparing = false;
-                        mp.start();
-                        isPlaying = true;
-                        updateNotification();
-                    });
-                    mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                        isPreparing = false;
-                        isPlaying = false;
-                        updateNotification();
-                        return false;
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
+            }
+            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+            mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build());
+            try {
+                mediaPlayer.setDataSource(STREAM_URL);
+                isPreparing = true;
+                mediaPlayer.prepareAsync();
+                mediaPlayer.setOnPreparedListener(mp -> {
                     isPreparing = false;
+                    mp.start();
+                    isPlaying = true;
+                    if (!wifiLock.isHeld()) wifiLock.acquire();
+                    updateNotification();
+                    retryHandler.removeCallbacksAndMessages(null);
+                });
+                mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                    isPreparing = false;
+                    isPlaying = false;
+                    if (wifiLock.isHeld()) wifiLock.release();
+                    updateNotification();
+                    if (shouldRetry) {
+                        mp.reset();
+                        retryHandler.postDelayed(this::playRadio, 5000);
+                    }
+                    return true;
+                });
+                mediaPlayer.setOnCompletionListener(mp -> {
+                    isPlaying = false;
+                    if (wifiLock.isHeld()) wifiLock.release();
+                    if (shouldRetry) {
+                        mp.reset();
+                        retryHandler.postDelayed(this::playRadio, 5000);
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+                isPreparing = false;
+                if (shouldRetry) {
+                    retryHandler.postDelayed(this::playRadio, 5000);
                 }
-            } else if (!mediaPlayer.isPlaying() && !isPreparing) {
-                mediaPlayer.start();
-                isPlaying = true;
-                updateNotification();
             }
             startForeground(NOTIFICATION_ID, getNotification());
         }
     }
 
     public void pauseRadio() {
+        shouldRetry = false;
+        retryHandler.removeCallbacksAndMessages(null);
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             isPlaying = false;
+            if (wifiLock.isHeld()) wifiLock.release();
             updateNotification();
         }
     }
 
     public void stopRadio() {
+        shouldRetry = false;
+        retryHandler.removeCallbacksAndMessages(null);
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
@@ -116,6 +149,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
             isPlaying = false;
             isPreparing = false;
         }
+        if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
         abandonAudioFocus();
         stopForeground(true);
     }
