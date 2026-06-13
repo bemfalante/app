@@ -73,10 +73,10 @@
         android:gravity="center"
         android:orientation="horizontal"
         android:background="@drawable/bg_controls_pill"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:paddingTop="0dp"
-        android:paddingBottom="0dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
         android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -84,8 +84,8 @@
 
         <ImageButton
             android:id="@+id/btn_play_pause"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="63dp"
+            android:layout_height="63dp"
             android:layout_marginEnd="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
@@ -94,8 +94,8 @@
 
         <ImageButton
             android:id="@+id/btn_stop"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="63dp"
+            android:layout_height="63dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_stop"
@@ -105,8 +105,8 @@
 
     <ImageButton
         android:id="@+id/btn_instagram"
-        android:layout_width="51dp"
-        android:layout_height="51dp"
+        android:layout_width="57dp"
+        android:layout_height="57dp"
         android:layout_margin="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:padding="4dp"

@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private View onAirDot;
     private Animation blinkAnimation;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private int lastState = -1; // 0: Idle, 1: Preparing, 2: Playing
     private final Runnable updateTask = new Runnable() {
         @Override
         public void run() {
@@ -107,42 +108,61 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
         if (isBound) {
+            int currentState;
             if (radioService.isPlaying()) {
+                currentState = 2;
+            } else if (radioService.isPreparing()) {
+                currentState = 1;
+            } else {
+                currentState = 0;
+            }
+
+            if (currentState == 2) {
                 btnPlayPause.setImageResource(R.drawable.ic_pause);
                 btnPlayPause.setEnabled(true);
                 loadingIndicator.setVisibility(View.GONE);
-                tvStatus.setText(R.string.status_on_air);
-                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.dark_red));
-                ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.orange_70)));
                 onAirDot.setVisibility(View.VISIBLE);
                 if (onAirDot.getAnimation() == null) {
                     onAirDot.startAnimation(blinkAnimation);
                 }
-            } else if (radioService.isPreparing()) {
+                if (lastState != currentState) {
+                    tvStatus.setText(R.string.status_on_air);
+                    tvStatus.setTextColor(ContextCompat.getColor(this, R.color.dark_red));
+                    ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.orange_70)));
+                }
+            } else if (currentState == 1) {
                 btnPlayPause.setImageResource(R.drawable.ic_play);
                 btnPlayPause.setEnabled(false);
                 loadingIndicator.setVisibility(View.VISIBLE);
-                tvStatus.setText(R.string.status_tuning);
-                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-                ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 onAirDot.setVisibility(View.GONE);
                 onAirDot.clearAnimation();
+                if (lastState != currentState) {
+                    tvStatus.setText(R.string.status_tuning);
+                    tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
+                    ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
+                }
             } else {
                 btnPlayPause.setImageResource(R.drawable.ic_play);
                 btnPlayPause.setEnabled(true);
                 loadingIndicator.setVisibility(View.GONE);
+                onAirDot.setVisibility(View.GONE);
+                onAirDot.clearAnimation();
+                if (lastState != currentState) {
+                    tvStatus.setText(R.string.status_press_play);
+                    tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
+                    ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
+                }
+            }
+            lastState = currentState;
+        } else {
+            // Initial state before service is bound
+            if (lastState != 0) {
                 tvStatus.setText(R.string.status_press_play);
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
                 ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 onAirDot.setVisibility(View.GONE);
-                onAirDot.clearAnimation();
+                lastState = 0;
             }
-        } else {
-            // Initial state before service is bound
-            tvStatus.setText(R.string.status_press_play);
-            tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-            ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
-            onAirDot.setVisibility(View.GONE);
         }
     }
 

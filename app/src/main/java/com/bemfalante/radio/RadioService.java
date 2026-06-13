@@ -79,9 +79,10 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         shouldRetry = true;
         retryHandler.removeCallbacksAndMessages(null);
         if (requestAudioFocus()) {
-            startForeground(NOTIFICATION_ID, getNotification());
-
             if (isPlaying || isPreparing) return;
+
+            isPreparing = true;
+            startForeground(NOTIFICATION_ID, getNotification());
 
             releaseMediaPlayer();
 
@@ -93,7 +94,6 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                     .build());
             try {
                 mediaPlayer.setDataSource(STREAM_URL);
-                isPreparing = true;
                 mediaPlayer.setOnPreparedListener(mp -> {
                     isPreparing = false;
                     try {
@@ -123,9 +123,10 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         isPreparing = false;
         isPlaying = false;
         if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
+        releaseMediaPlayer();
         updateNotification();
         if (shouldRetry) {
-            retryHandler.postDelayed(this::playRadio, 5000);
+            retryHandler.postDelayed(this::playRadio, 10000);
         }
     }
 
