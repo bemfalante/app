@@ -28,7 +28,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
 
     private static final String CHANNEL_ID = "RadioServiceChannel";
     private static final int NOTIFICATION_ID = 1;
-    private static final String STREAM_URL = "https://stream.zeno.fm/f718a010rxhvv;";
+    private static final String STREAM_URL = "https://stream.zeno.fm/f718a010rxhvv";
 
     public static final String ACTION_PLAY = "PLAY";
     public static final String ACTION_PAUSE = "PAUSE";
@@ -92,10 +92,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build());
             try {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("User-Agent", "RadioBemFalante/2.0");
-                mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(STREAM_URL), headers);
-
+                mediaPlayer.setDataSource(STREAM_URL);
                 isPreparing = true;
                 mediaPlayer.setOnPreparedListener(mp -> {
                     isPreparing = false;
@@ -114,16 +111,6 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                     return true;
                 });
                 mediaPlayer.setOnCompletionListener(mp -> handleRetry());
-                mediaPlayer.setOnInfoListener((mp, what, extra) -> {
-                    if (what == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
-                        isPreparing = true;
-                        updateNotification();
-                    } else if (what == MediaPlayer.MEDIA_INFO_BUFFERING_END) {
-                        isPreparing = false;
-                        updateNotification();
-                    }
-                    return true;
-                });
                 mediaPlayer.prepareAsync();
             } catch (Exception e) {
                 e.printStackTrace();
