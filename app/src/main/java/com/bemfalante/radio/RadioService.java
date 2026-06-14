@@ -78,23 +78,16 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         shouldRetry = true;
         retryHandler.removeCallbacksAndMessages(null);
 
-        if (isPlaying || isPreparing) {
-            Toast.makeText(this, "Já está ativo (T:" + isPlaying + " C:" + isPreparing + ")", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (isPlaying || isPreparing) return;
 
         if (requestAudioFocus()) {
             isPreparing = true;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, getNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-            } else {
-                startForeground(NOTIFICATION_ID, getNotification());
-            }
 
             releaseMediaPlayer();
 
             try {
                 mediaPlayer = new MediaPlayer();
+                mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
                 mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -102,32 +95,27 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                 mediaPlayer.setDataSource(STREAM_URL);
 
                 mediaPlayer.setOnPreparedListener(mp -> {
-                    Toast.makeText(this, "Conectado, iniciando...", Toast.LENGTH_SHORT).show();
-                    try {
-                        mp.start();
-                        isPlaying = true;
-                        isPreparing = false;
-                        if (!wifiLock.isHeld()) wifiLock.acquire();
-                        updateNotification();
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Falha ao iniciar áudio", Toast.LENGTH_SHORT).show();
-                        handleRetry();
-                    }
+                    isPlaying = true;
+                    isPreparing = false;
+                    mp.start();
+                    if (!wifiLock.isHeld()) wifiLock.acquire();
+                    updateNotification();
                 });
 
                 mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                    Toast.makeText(this, "Erro MediaPlayer: " + what, Toast.LENGTH_SHORT).show();
                     handleRetry();
                     return true;
                 });
 
-                mediaPlayer.setOnCompletionListener(mp -> {
-                    Toast.makeText(this, "Conexão encerrada pelo servidor", Toast.LENGTH_SHORT).show();
-                    handleRetry();
-                });
+                mediaPlayer.setOnCompletionListener(mp -> handleRetry());
 
-                Toast.makeText(this, "Sintonizando Zeno...", Toast.LENGTH_SHORT).show();
                 mediaPlayer.prepareAsync();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(NOTIFICATION_ID, getNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+                } else {
+                    startForeground(NOTIFICATION_ID, getNotification());
+                }
             } catch (Exception e) {
                 Toast.makeText(this, "Erro no DataSource", Toast.LENGTH_SHORT).show();
                 handleRetry();
