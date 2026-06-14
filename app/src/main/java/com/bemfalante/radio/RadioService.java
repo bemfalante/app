@@ -11,7 +11,6 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Build;
@@ -22,8 +21,6 @@ import android.os.PowerManager;
 import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RadioService extends Service implements AudioManager.OnAudioFocusChangeListener {
 
@@ -82,13 +79,11 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         retryHandler.removeCallbacksAndMessages(null);
 
         if (isPlaying || isPreparing) {
-            Toast.makeText(this, "Já está tocando ou carregando", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Já está ativo (T:" + isPlaying + " C:" + isPreparing + ")", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (requestAudioFocus()) {
-            Toast.makeText(this, "Foco de áudio obtido", Toast.LENGTH_SHORT).show();
-
             isPreparing = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(NOTIFICATION_ID, getNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
@@ -98,57 +93,58 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
 
             releaseMediaPlayer();
 
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-            mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build());
             try {
-                Toast.makeText(this, "Conectando ao Zeno...", Toast.LENGTH_SHORT).show();
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build());
                 mediaPlayer.setDataSource(STREAM_URL);
+
                 mediaPlayer.setOnPreparedListener(mp -> {
-                    Toast.makeText(this, "Conectado!", Toast.LENGTH_SHORT).show();
-                    isPreparing = false;
+                    Toast.makeText(this, "Conectado, iniciando...", Toast.LENGTH_SHORT).show();
                     try {
                         mp.start();
                         isPlaying = true;
+                        isPreparing = false;
                         if (!wifiLock.isHeld()) wifiLock.acquire();
                         updateNotification();
                     } catch (Exception e) {
-                        Toast.makeText(this, "Erro ao iniciar áudio", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
+                        Toast.makeText(this, "Falha ao iniciar áudio", Toast.LENGTH_SHORT).show();
                         handleRetry();
                     }
                 });
+
                 mediaPlayer.setOnErrorListener((mp, what, extra) -> {
                     Toast.makeText(this, "Erro MediaPlayer: " + what, Toast.LENGTH_SHORT).show();
                     handleRetry();
                     return true;
                 });
+
                 mediaPlayer.setOnCompletionListener(mp -> {
-                    Toast.makeText(this, "Streaming concluído", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Conexão encerrada pelo servidor", Toast.LENGTH_SHORT).show();
                     handleRetry();
                 });
+
+                Toast.makeText(this, "Sintonizando Zeno...", Toast.LENGTH_SHORT).show();
                 mediaPlayer.prepareAsync();
             } catch (Exception e) {
-                Toast.makeText(this, "Falha no DataSource", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
+                Toast.makeText(this, "Erro no DataSource", Toast.LENGTH_SHORT).show();
                 handleRetry();
             }
         } else {
-            Toast.makeText(this, "Falha no Foco de áudio", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Erro: Sem foco de áudio", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void handleRetry() {
-        Toast.makeText(this, "Agendando reconexão em 10s...", Toast.LENGTH_SHORT).show();
         isPreparing = false;
         isPlaying = false;
         if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
         releaseMediaPlayer();
         updateNotification();
         if (shouldRetry) {
+            Toast.makeText(this, "Reconectando em 10s...", Toast.LENGTH_SHORT).show();
             retryHandler.postDelayed(this::playRadio, 10000);
         }
     }
@@ -257,7 +253,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         PendingIntent stopPendingIntent = PendingIntent.getService(this, 0, stopIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        String contentText = isPreparing ? "Carregando..." : (isPlaying ? "Tocando agora..." : "Pausado");
+        String contentText = isPreparing ? "Sintonizando..." : (isPlaying ? "Ao vivo agora" : "Pausado");
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Rádio TV Bem Falante")

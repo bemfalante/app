@@ -71,9 +71,6 @@ public class MainActivity extends AppCompatActivity {
         statusContainer = findViewById(R.id.status_container);
         onAirDot = findViewById(R.id.on_air_dot);
 
-        // Ensure status container is on top
-        ViewCompat.setElevation(statusContainer, 20f);
-
         blinkAnimation = new AlphaAnimation(0.0f, 1.0f);
         blinkAnimation.setDuration(500);
         blinkAnimation.setStartOffset(20);
@@ -132,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     tvStatus.setText(R.string.status_on_air);
                     tvStatus.setTextColor(ContextCompat.getColor(this, R.color.dark_red));
-                    ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.orange_70)));
 
                 } else if (currentState == 1) {
                     btnPlayPause.setImageResource(R.drawable.ic_play);
@@ -142,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
                     onAirDot.clearAnimation();
                     tvStatus.setText(R.string.status_tuning);
                     tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-                    ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
 
                 } else {
                     btnPlayPause.setImageResource(R.drawable.ic_play);
@@ -152,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
                     onAirDot.clearAnimation();
                     tvStatus.setText(R.string.status_press_play);
                     tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-                    ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 }
                 lastState = currentState;
             }
@@ -161,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
             if (lastState != 0) {
                 tvStatus.setText(R.string.status_press_play);
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.orange));
-                ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 onAirDot.setVisibility(View.GONE);
                 lastState = 0;
             }
