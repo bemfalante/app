@@ -155,11 +155,6 @@ public class MainActivity extends AppCompatActivity {
                     ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 }
                 lastState = currentState;
-            } else if (currentState == 2) {
-                // Ensure blink animation continues if playing
-                if (onAirDot.getAnimation() == null) {
-                    onAirDot.startAnimation(blinkAnimation);
-                }
             }
         } else {
             // Estado inicial antes do service conectar

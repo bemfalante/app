@@ -88,8 +88,13 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
 
         if (requestAudioFocus()) {
             Toast.makeText(this, "Foco de áudio obtido", Toast.LENGTH_SHORT).show();
+
             isPreparing = true;
-            startForeground(NOTIFICATION_ID, getNotification());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NOTIFICATION_ID, getNotification(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            } else {
+                startForeground(NOTIFICATION_ID, getNotification());
+            }
 
             releaseMediaPlayer();
 
