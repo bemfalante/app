@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.content.res.ColorStateList;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private final ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
+            Toast.makeText(MainActivity.this, "Serviço Conectado à UI", Toast.LENGTH_SHORT).show();
             RadioService.RadioBinder binder = (RadioService.RadioBinder) service;
             radioService = binder.getService();
             isBound = true;
@@ -119,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
             // SÓ ATUALIZA A UI SE HOUVER MUDANÇA REAL DE ESTADO
             if (lastState != currentState) {
+                Toast.makeText(this, "Mudança de Estado: " + lastState + " -> " + currentState, Toast.LENGTH_SHORT).show();
                 if (currentState == 2) {
                     btnPlayPause.setImageResource(R.drawable.ic_pause);
                     btnPlayPause.setEnabled(true);
@@ -152,6 +155,11 @@ public class MainActivity extends AppCompatActivity {
                     ViewCompat.setBackgroundTintList(statusContainer, ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dark_red_70)));
                 }
                 lastState = currentState;
+            } else if (currentState == 2) {
+                // Ensure blink animation continues if playing
+                if (onAirDot.getAnimation() == null) {
+                    onAirDot.startAnimation(blinkAnimation);
+                }
             }
         } else {
             // Estado inicial antes do service conectar

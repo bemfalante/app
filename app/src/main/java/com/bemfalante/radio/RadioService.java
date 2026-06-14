@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import java.io.IOException;
 import java.util.HashMap;
@@ -53,6 +54,7 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
     @Override
     public void onCreate() {
         super.onCreate();
+        Toast.makeText(this, "Service Criado", Toast.LENGTH_SHORT).show();
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         wifiLock = ((WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE))
                 .createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "RadioService:WifiLock");
@@ -79,9 +81,13 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
         shouldRetry = true;
         retryHandler.removeCallbacksAndMessages(null);
 
-        if (isPlaying || isPreparing) return;
+        if (isPlaying || isPreparing) {
+            Toast.makeText(this, "Já está tocando ou carregando", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (requestAudioFocus()) {
+            Toast.makeText(this, "Foco de áudio obtido", Toast.LENGTH_SHORT).show();
             isPreparing = true;
             startForeground(NOTIFICATION_ID, getNotification());
 
@@ -94,8 +100,10 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build());
             try {
+                Toast.makeText(this, "Conectando ao Zeno...", Toast.LENGTH_SHORT).show();
                 mediaPlayer.setDataSource(STREAM_URL);
                 mediaPlayer.setOnPreparedListener(mp -> {
+                    Toast.makeText(this, "Conectado!", Toast.LENGTH_SHORT).show();
                     isPreparing = false;
                     try {
                         mp.start();
@@ -103,24 +111,33 @@ public class RadioService extends Service implements AudioManager.OnAudioFocusCh
                         if (!wifiLock.isHeld()) wifiLock.acquire();
                         updateNotification();
                     } catch (Exception e) {
+                        Toast.makeText(this, "Erro ao iniciar áudio", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                         handleRetry();
                     }
                 });
                 mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                    Toast.makeText(this, "Erro MediaPlayer: " + what, Toast.LENGTH_SHORT).show();
                     handleRetry();
                     return true;
                 });
-                mediaPlayer.setOnCompletionListener(mp -> handleRetry());
+                mediaPlayer.setOnCompletionListener(mp -> {
+                    Toast.makeText(this, "Streaming concluído", Toast.LENGTH_SHORT).show();
+                    handleRetry();
+                });
                 mediaPlayer.prepareAsync();
             } catch (Exception e) {
+                Toast.makeText(this, "Falha no DataSource", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
                 handleRetry();
             }
+        } else {
+            Toast.makeText(this, "Falha no Foco de áudio", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void handleRetry() {
+        Toast.makeText(this, "Agendando reconexão em 10s...", Toast.LENGTH_SHORT).show();
         isPreparing = false;
         isPlaying = false;
         if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
